@@ -1,24 +1,52 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Footer from "./components/Footer";
 import Header from "./components/Header";
 import Jokenav from "./components/Jokenav";
+import { getJokeAPI } from "./api/joke";
 
 function App() {
-  const [story, setStory] = useState(
-    `A child asked his father, "How were people born?" So his father said, "Adam and Eve made babies, then their babies became adults and made babies, and so on." The child then went to his mother, asked her the same question and she told him, "We were monkeys then we evolved to become like we are now." The child ran back to his father and said, "You lied to me!" His father replied, "No, your mom was talking about her side of the family."`
-  );
+  const [jokes, setJokes] = useState([]);
+  const [currentJokeIndex, setCurrentJokeIndex] = useState(0);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    const newJokes = await getJokeAPI();
+    setJokes(newJokes);
+    setCurrentJokeIndex(0);
+  };
 
   const handleFunnyClick = () => {
-    setStory(
-      "Two atoms are walking down the street, one suddenly stops and says, 'Oh no, I lost an electron!' The other asks, 'Are you sure?' The first replies, 'Yes, I'm positive!'"
-    );
+    if (currentJokeIndex < jokes.length - 1) {
+      setCurrentJokeIndex(currentJokeIndex + 1);
+    } else {
+      alert("That's all the jokes for today! Come back another day!");
+    }
+    localStorage.setItem("voted", "funny"); // Lưu trạng thái bình chọn vào localStorage
   };
 
   const handleNotFunnyClick = () => {
-    setStory(
-      "Why don't scientists trust atoms? Because they make up everything!"
-    );
+    if (currentJokeIndex < jokes.length - 1) {
+      setCurrentJokeIndex(currentJokeIndex + 1);
+    } else {
+      alert("That's all the jokes for today! Come back another day!");
+    }
+    localStorage.setItem("voted", "not funny"); // Lưu trạng thái bình chọn vào localStorage
   };
+
+  useEffect(() => {
+    const voted = localStorage.getItem("voted");
+    if (voted) {
+      // Nếu đã bình chọn trước đó, xử lý nó tương ứng
+      if (voted === "funny") {
+        handleFunnyClick();
+      } else if (voted === "not funny") {
+        handleNotFunnyClick();
+      }
+    }
+  }, []);
 
   return (
     <div className="flex flex-col h-screen">
@@ -26,24 +54,40 @@ function App() {
         <Header />
         <Jokenav />
       </div>
-      <div className="flex-grow flex flex-col justify-center items-center mt-[-150px]">
-        <h3 className="mb-8 max-w-[800px] text-gray-500">{story}</h3>
-        <hr className="w-[650px] border-t border-gray-200 mb-8" />
-        <div className="flex">
-          <button
-            onClick={handleFunnyClick}
-            className="m-2 py-2 px-4 bg-blue-500 text-white rounded-none w-[200px]"
-          >
-            This is Funny!
-          </button>
-          <button
-            onClick={handleNotFunnyClick}
-            className="m-2 py-2 px-4 bg-green-500 text-white rounded-none w-[200px]"
-          >
-            This is not funny.
-          </button>
+      {jokes.length > 0 && currentJokeIndex < jokes.length && (
+        <div className="flex-grow flex flex-col justify-center items-center mt-[-150px]">
+          <h3 className="mb-8 max-w-[800px] text-gray-500">
+            {jokes[currentJokeIndex].contentstory}
+          </h3>
+          <hr className="w-[650px] border-t border-gray-200 mb-8" />
+          <div className="flex">
+            <button
+              onClick={handleFunnyClick}
+              className="m-2 py-2 px-4 bg-blue-500 text-white rounded-none w-[200px]"
+            >
+              This is Funny!
+            </button>
+            <button
+              onClick={handleNotFunnyClick}
+              className="m-2 py-2 px-4 bg-green-500 text-white rounded-none w-[200px]"
+            >
+              This is not funny.
+            </button>
+          </div>
         </div>
-      </div>
+      )}
+      {jokes.length === 0 && (
+        <div className="flex-grow flex items-center justify-center">
+          <p className="text-gray-500">Loading jokes...</p>
+        </div>
+      )}
+      {currentJokeIndex >= jokes.length && (
+        <div className="flex-grow flex items-center justify-center">
+          <p className="text-gray-500">
+            That's all the jokes for today! Come back another day!
+          </p>
+        </div>
+      )}
       <div>
         <Footer />
       </div>
