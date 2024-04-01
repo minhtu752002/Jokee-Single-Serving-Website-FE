@@ -8,7 +8,7 @@ export default function Header() {
       <img
         src={logo1}
         alt="anhHL"
-        className="w-[100px] h-[60px] object-contain mx-2"
+        className="w-[100px] h-[60px] object-contain mx-[100px]"
       />
       <div className="mx-[400px]"></div>
       <img
